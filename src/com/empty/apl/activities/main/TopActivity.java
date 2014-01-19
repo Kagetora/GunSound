@@ -5,6 +5,7 @@ import android.content.Context;
 import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -22,9 +23,11 @@ import com.empty.framework.ui.view.MTextView;
  * @author id:language_and_engineering
  * 
  */
-public class TopActivity extends BaseNormalActivity
+public class TopActivity extends BaseNormalActivity implements GestureDetector.OnGestureListener
 {
     private ShakeListener mShakeListener;
+
+    private GestureDetector mGestureDetector;
 
     MediaPlayer bgm;
     MTextView b1;
@@ -33,23 +36,27 @@ public class TopActivity extends BaseNormalActivity
     public void defineContentView() {
         final TopActivity activity = this;
 
+        Log.d("Gun", "Log test");
         bgm = MediaPlayer.create(activity, R.raw.gun);
         // ここに，画面上のUI部品の定義を記述する。
         SensorManager mSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         mShakeListener = new ShakeListener();
 
-        mShakeListener.registerListener(mSensorManager, mOnShakeListener, true);
+        mGestureDetector = new GestureDetector(this, this);
+//        mShakeListener.registerListener(mSensorManager, mOnShakeListener, true);
 
+        /*
         new UIBuilder(context)
                 .add(
                         b1 = new MTextView(activity)
                                 .text("↓\n↓\n↓\n↓\n↓\n↓")
                                 .widthFillParent()
                                 .heightWrapContent()
-                                .touch(new FlickTouchListener(activity, b1))
+//                                .touch(new FlickTouchListener(activity, b1))
 
                 )
                 .display();
+                */
     }
 
     @Override
@@ -68,13 +75,24 @@ public class TopActivity extends BaseNormalActivity
         moveTaskToBack(true);
     }
 
+
+    // タッチイベント時に呼ばれる
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+//        Log.d("Gun", "onTouch");
+        mGestureDetector.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
+
+
     private OnShakeListener mOnShakeListener = new OnShakeListener() {
         // @Override
         public void onShaked(int direction) {
             if ((direction & ShakeListener.DIRECTION_X) > 0
                     || (direction & ShakeListener.DIRECTION_Y) > 0
                     || (direction & ShakeListener.DIRECTION_Z) > 0) {
-                bgm.start();
+                Log.d("GUN", "SENSOR ACTIVATED");
+                //bgm.start();
             }
         }
     };
@@ -82,6 +100,38 @@ public class TopActivity extends BaseNormalActivity
     private void sound() {
         // 音楽読み込み
         bgm.start();
+    }
+
+    @Override
+    public boolean onDown(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent e) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent e) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        Log.d("Gun", "Flick detected");
+        sound();
+        return false;
     }
 
     // --------------------------------------------------------------------------
