@@ -3,7 +3,10 @@ package com.empty.apl.activities.main;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.SensorManager;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.SoundPool;
+import android.os.AsyncTask;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -13,9 +16,12 @@ import com.empty.apl.R;
 import com.empty.apl.common.ShakeListener;
 import com.empty.apl.common.ShakeListener.OnShakeListener;
 import com.empty.framework.activities.base.BaseNormalActivity;
+import com.empty.framework.task.AsyncTasksRunner;
 import com.empty.framework.ui.UIBuilder;
 import com.empty.framework.ui.menu.OptionMenuBuilder;
 import com.empty.framework.ui.view.MTextView;
+
+import java.io.IOException;
 
 /**
  * サンプルのトップ画面。
@@ -30,6 +36,8 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
     private GestureDetector mGestureDetector;
 
     MediaPlayer bgm;
+    SoundPool soundPool;
+    private int soundId;
     MTextView b1;
 
     @Override
@@ -38,12 +46,14 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
 
         Log.d("Gun", "Log test");
         bgm = MediaPlayer.create(activity, R.raw.gun);
+        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+        soundId = soundPool.load(this, R.raw.gun, 1);
         // ここに，画面上のUI部品の定義を記述する。
         SensorManager mSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         mShakeListener = new ShakeListener();
 
         mGestureDetector = new GestureDetector(this, this);
-//        mShakeListener.registerListener(mSensorManager, mOnShakeListener, true);
+        mShakeListener.registerListener(mSensorManager, mOnShakeListener, true);
 
         /*
         new UIBuilder(context)
@@ -97,9 +107,11 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
         }
     };
 
-    private void sound() {
+    private void sound()  {
         // 音楽読み込み
-        bgm.start();
+
+        soundPool.play(soundId, 1,1,1,0,1);
+//        bgm.start();
     }
 
     @Override
@@ -130,8 +142,20 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         Log.d("Gun", "Flick detected");
-        sound();
+
+        //音は非同期で再生する
+        new MusicPlayTask().execute(null);
+        //sound();
         return false;
+    }
+
+    public class MusicPlayTask extends AsyncTask {
+
+        @Override
+        protected Object doInBackground(Object[] params) {
+            sound();
+            return null;
+        }
     }
 
     // --------------------------------------------------------------------------
