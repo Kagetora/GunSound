@@ -1,5 +1,7 @@
 package com.empty.apl.activities.main;
 
+import java.util.Random;
+
 import android.content.Context;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
@@ -29,9 +31,17 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
     private ShakeListener mShakeListener;
     private GestureDetector mGestureDetector;
     private SensorManager mSensorManager;
-    
+    private OnShakeListener mOnShakeListener;
+    private boolean working;
+
     private SoundPool soundPool;
     private int soundId;
+    private int gunSoundId;
+    private int emptySoundId;
+    private int reloadSoundId;
+
+    private int counter;
+    private static int MAX_COUNT = 6;
 
     @Override
     public void defineContentView() {
@@ -39,10 +49,29 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
 
         Log.d("Gun", "Log test");
         soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
-        soundId = soundPool.load(this, R.raw.gun001, 1);
+        gunSoundId = soundPool.load(this, R.raw.gun001, 1);
+        emptySoundId = soundPool.load(this, R.raw.empty, 1);
+        reloadSoundId = soundPool.load(this, R.raw.reload2, 1);
+
+        counter = MAX_COUNT;
+        working = false;
 
         mSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         mShakeListener = new ShakeListener();
+        mOnShakeListener = new OnShakeListener() {
+
+            @Override
+            public void onShaked(int direction) {
+                // TODO 自動生成されたメソッド・スタブ
+                if ((direction & ShakeListener.DIRECTION_X) > 0
+                        || (direction & ShakeListener.DIRECTION_Y) > 0
+                        || (direction & ShakeListener.DIRECTION_Z) > 0) {
+                    Log.d("GUN", "SENSOR ACTIVATED");
+                    reload();
+                }
+            }
+
+        };
 
         mGestureDetector = new GestureDetector(this, this);
         mShakeListener.registerListener(mSensorManager, mOnShakeListener, true);
@@ -70,23 +99,6 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
         Log.d("Gun", "onTouch");
         mGestureDetector.onTouchEvent(event);
         return super.onTouchEvent(event);
-    }
-
-    private OnShakeListener mOnShakeListener = new OnShakeListener() {
-        @Override
-        public void onShaked(int direction) {
-            if ((direction & ShakeListener.DIRECTION_X) > 0
-                    || (direction & ShakeListener.DIRECTION_Y) > 0
-                    || (direction & ShakeListener.DIRECTION_Z) > 0) {
-                Log.d("GUN", "SENSOR ACTIVATED");
-                sound();
-            }
-        }
-    };
-
-    private void sound() {
-        // 音楽読み込み
-        soundPool.play(soundId, 1, 1, 1, 0, 1);
     }
 
     @Override
@@ -118,8 +130,17 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         Log.d("Gun", "Flick detected");
 
-        // 音は非同期で再生する
-        new MusicPlayTask().execute(null);
+        if (!working) {
+            working = true;
+
+            soundId = (counter > 0) ? gunSoundId : emptySoundId;
+            counter--;
+
+            // 音は非同期で再生する
+            new MusicPlayTask().execute(null);
+
+            working = false;
+        }
         return false;
     }
 
@@ -129,6 +150,27 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
         protected Object doInBackground(Object[] params) {
             sound();
             return null;
+        }
+    }
+
+    private void sound() {
+        // 音楽読み込み
+        soundPool.play(soundId, 1, 1, 1, 0, 1);
+    }
+
+    private void reload() {
+        if (!working) {
+            working = true;
+
+            counter = MAX_COUNT;
+            soundId = reloadSoundId;
+
+//            // 音は非同期で再生する
+//            new MusicPlayTask().execute(null);
+
+            soundPool.play(soundId, 1, 1, 1, 0, 1);
+
+            working = false;
         }
     }
 

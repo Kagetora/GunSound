@@ -65,7 +65,7 @@ public class ShakeListener implements SensorEventListener {
     /**
      * 加速度の平均値と、絶対値の差がどれだけ差があると振られた事にするか保持します
      */
-    private int mDifferenceThreshold = 5000;
+    private int mDifferenceThreshold = 750;
 
     /**
      * 加速度の値を保持しておくリスト
