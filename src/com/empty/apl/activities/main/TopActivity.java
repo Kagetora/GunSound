@@ -11,6 +11,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 
 import com.empty.apl.R;
+import com.empty.apl.common.AppSettings;
 import com.empty.apl.common.ShakeListener;
 import com.empty.apl.common.ShakeListener.OnShakeListener;
 import com.empty.framework.activities.base.BaseNormalActivity;
@@ -26,40 +27,25 @@ import com.empty.framework.ui.view.MTextView;
 public class TopActivity extends BaseNormalActivity implements GestureDetector.OnGestureListener
 {
     private ShakeListener mShakeListener;
-
     private GestureDetector mGestureDetector;
-
-    MediaPlayer bgm;
-    SoundPool soundPool;
+    private SensorManager mSensorManager;
+    
+    private SoundPool soundPool;
     private int soundId;
-    MTextView b1;
 
     @Override
     public void defineContentView() {
         final TopActivity activity = this;
 
         Log.d("Gun", "Log test");
-        bgm = MediaPlayer.create(activity, R.raw.gun);
         soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
-        soundId = soundPool.load(this, R.raw.gun, 1);
+        soundId = soundPool.load(this, R.raw.gun001, 1);
 
-        SensorManager mSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
+        mSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         mShakeListener = new ShakeListener();
 
         mGestureDetector = new GestureDetector(this, this);
         mShakeListener.registerListener(mSensorManager, mOnShakeListener, true);
-
-        /*
-        new UIBuilder(context)
-                .add(
-                        b1 = new MTextView(activity)
-                                .text("↓\n↓\n↓\n↓\n↓\n↓")
-                                .widthFillParent()
-                                .heightWrapContent()
-
-                )
-                .display();
-                */
     }
 
     @Override
@@ -78,18 +64,16 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
         moveTaskToBack(true);
     }
 
-
     // タッチイベント時に呼ばれる
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-//        Log.d("Gun", "onTouch");
+        Log.d("Gun", "onTouch");
         mGestureDetector.onTouchEvent(event);
         return super.onTouchEvent(event);
     }
 
-
     private OnShakeListener mOnShakeListener = new OnShakeListener() {
-        // @Override
+        @Override
         public void onShaked(int direction) {
             if ((direction & ShakeListener.DIRECTION_X) > 0
                     || (direction & ShakeListener.DIRECTION_Y) > 0
@@ -100,9 +84,9 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
         }
     };
 
-    private void sound()  {
+    private void sound() {
         // 音楽読み込み
-        soundPool.play(soundId, 1,1,1,0,1);
+        soundPool.play(soundId, 1, 1, 1, 0, 1);
     }
 
     @Override
@@ -134,9 +118,8 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         Log.d("Gun", "Flick detected");
 
-        //音は非同期で再生する
+        // 音は非同期で再生する
         new MusicPlayTask().execute(null);
-        //sound();
         return false;
     }
 
@@ -147,5 +130,10 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
             sound();
             return null;
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        mShakeListener.unregisterListener(mSensorManager);
     }
 }

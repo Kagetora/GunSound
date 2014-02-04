@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">empty</string>
+    <string name="app_name">銃声</string>
 
 
 	<!-- ■■フレームワークで使用する文字列リソース ここから■■ -->
 
     <!-- Logのタグ名 -->
-    <string name="tag_for_logging">android-mvc-sample</string>
+    <string name="tag_for_logging">gunsound</string>
 
     <!-- RDBの物理名 -->
-    <string name="rdb_physical_name">android_mvc_sample</string>
+    <string name="rdb_physical_name">gunsound</string>
 
     <!-- GoogleMap API Key -->
     <string name="google_map_api_key">※ご自分のAPI Keyに置き換えてください。</string>
