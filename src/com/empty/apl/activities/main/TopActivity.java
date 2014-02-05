@@ -74,7 +74,7 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
         };
 
         mGestureDetector = new GestureDetector(this, this);
-        mShakeListener.registerListener(mSensorManager, mOnShakeListener, true);
+        mShakeListener.registerListener(mSensorManager, mOnShakeListener);
     }
 
     @Override
@@ -165,10 +165,10 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
             counter = MAX_COUNT;
             soundId = reloadSoundId;
 
-//            // 音は非同期で再生する
-//            new MusicPlayTask().execute(null);
+            // 音は非同期で再生する
+            new MusicPlayTask().execute(null);
 
-            soundPool.play(soundId, 1, 1, 1, 0, 1);
+//            soundPool.play(soundId, 1, 1, 1, 0, 1);
 
             working = false;
         }

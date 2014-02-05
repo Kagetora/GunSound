@@ -35,7 +35,7 @@ public class ShakeListener implements SensorEventListener {
     /**
      * 加速度の判定をするために最大いくつのデータを保持するか設定します
      */
-    private static final int SAMPLING_SIZE = 50;
+    private static final int SAMPLING_SIZE = 35;
 
     /**
      * 端末が振られた事を検知するコールバックインターフェイスです
@@ -65,7 +65,7 @@ public class ShakeListener implements SensorEventListener {
     /**
      * 加速度の平均値と、絶対値の差がどれだけ差があると振られた事にするか保持します
      */
-    private int mDifferenceThreshold = 750;
+    private int mDifferenceThreshold = 500;
 
     /**
      * 加速度の値を保持しておくリスト
