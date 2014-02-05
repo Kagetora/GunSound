@@ -1,23 +1,24 @@
 package com.empty.apl.activities.main;
 
-import java.util.Random;
-
 import android.content.Context;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.empty.apl.R;
-import com.empty.apl.common.AppSettings;
 import com.empty.apl.common.ShakeListener;
 import com.empty.apl.common.ShakeListener.OnShakeListener;
 import com.empty.framework.activities.base.BaseNormalActivity;
+import com.empty.framework.ui.UIBuilder;
 import com.empty.framework.ui.menu.OptionMenuBuilder;
+import com.empty.framework.ui.view.MLinearLayout;
+import com.empty.framework.ui.view.MSeekBar;
 import com.empty.framework.ui.view.MTextView;
 
 /**
@@ -75,6 +76,43 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
 
         mGestureDetector = new GestureDetector(this, this);
         mShakeListener.registerListener(mSensorManager, mOnShakeListener);
+
+        new UIBuilder(activity)
+                .add(
+                        new MLinearLayout(activity)
+                                .widthFillParent()
+                                .orientationVertical()
+                                .add(
+                                        new MTextView(activity)
+                                                .text("振動センサー感度")
+                                        ,
+                                        new MSeekBar(activity)
+                                                .widthFillParent()
+                                                .max(1000)
+                                                .progress(500)
+                                                .paddingPx(10)
+                                                .thumOffset(500)
+                                                .change(
+                                                        new OnSeekBarChangeListener() {
+                                                            public void onProgressChanged(SeekBar seekBar,
+                                                                    int progress, boolean fromUser) {
+                                                                // ツマミをドラッグしたときに呼ばれる
+                                                                mShakeListener.setDifferenceThreshold(1000 - progress);
+                                                                Log.d("GUN", "THRESHOLD IS " + (1000 - progress));
+                                                            }
+
+                                                            public void onStartTrackingTouch(SeekBar seekBar) {
+                                                                // ツマミに触れたときに呼ばれる
+                                                            }
+
+                                                            public void onStopTrackingTouch(SeekBar seekBar) {
+                                                                // ツマミを離したときに呼ばれる
+                                                            }
+                                                        }
+                                                )
+                                )
+                )
+                .display();
     }
 
     @Override
@@ -168,7 +206,7 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
             // 音は非同期で再生する
             new MusicPlayTask().execute(null);
 
-//            soundPool.play(soundId, 1, 1, 1, 0, 1);
+            // soundPool.play(soundId, 1, 1, 1, 0, 1);
 
             working = false;
         }
