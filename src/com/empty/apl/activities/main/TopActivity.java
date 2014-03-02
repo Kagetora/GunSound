@@ -13,10 +13,12 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 
 import com.empty.apl.R;
 import com.empty.apl.common.ShakeListener;
+import com.empty.apl.common.Util;
 import com.empty.apl.common.ShakeListener.OnShakeListener;
+import com.empty.apl.db.dao.PrefDAO;
 import com.empty.framework.activities.base.BaseNormalActivity;
-import com.empty.framework.ui.UIBuilder;
 import com.empty.framework.ui.menu.OptionMenuBuilder;
+import com.empty.framework.ui.view.MImageView;
 import com.empty.framework.ui.view.MLinearLayout;
 import com.empty.framework.ui.view.MSeekBar;
 import com.empty.framework.ui.view.MTextView;
@@ -34,6 +36,7 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
     private SensorManager mSensorManager;
     private OnShakeListener mOnShakeListener;
     private boolean working;
+    private long previousWorkTime;
 
     private SoundPool soundPool;
     private int soundId;
@@ -43,6 +46,8 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
 
     private int counter;
     private static int MAX_COUNT = 6;
+
+    private MLinearLayout layout1;
 
     @Override
     public void defineContentView() {
@@ -56,9 +61,15 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
 
         counter = MAX_COUNT;
         working = false;
+        previousWorkTime = System.currentTimeMillis();
 
         mSensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
         mShakeListener = new ShakeListener();
+
+        // 振動センサーの感度を設定
+        PrefDAO prefDAO = new PrefDAO();
+        int sensitivity = prefDAO.getSensitivity(activity);
+        mShakeListener.setDifferenceThreshold(sensitivity);
         mOnShakeListener = new OnShakeListener() {
 
             @Override
@@ -77,42 +88,40 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
         mGestureDetector = new GestureDetector(this, this);
         mShakeListener.registerListener(mSensorManager, mOnShakeListener);
 
-        new UIBuilder(activity)
+        layout1 = new MLinearLayout(activity)
+                .widthFillParent()
+                .heightFillParent()
+                .orientationVertical()
                 .add(
-                        new MLinearLayout(activity)
+                        new MTextView(activity)
+                                .text("振動センサー感度")
+                        ,
+                        new MSeekBar(activity)
                                 .widthFillParent()
-                                .orientationVertical()
-                                .add(
-                                        new MTextView(activity)
-                                                .text("振動センサー感度")
-                                        ,
-                                        new MSeekBar(activity)
-                                                .widthFillParent()
-                                                .max(1000)
-                                                .progress(500)
-                                                .paddingPx(10)
-                                                .thumOffset(500)
-                                                .change(
-                                                        new OnSeekBarChangeListener() {
-                                                            public void onProgressChanged(SeekBar seekBar,
-                                                                    int progress, boolean fromUser) {
-                                                                // ツマミをドラッグしたときに呼ばれる
-                                                                mShakeListener.setDifferenceThreshold(1000 - progress);
-                                                                Log.d("GUN", "THRESHOLD IS " + (1000 - progress));
-                                                            }
+                                .max(100)
+                                .progress(50)
+                                .paddingPx(10)
+                                .thumOffset(50)
+                                .change(
+                                        new OnSeekBarChangeListener() {
+                                            public void onProgressChanged(SeekBar seekBar,
+                                                    int progress, boolean fromUser) {
+                                                // ツマミをドラッグしたときに呼ばれる
+                                                mShakeListener.setDifferenceThreshold(1000 - progress * 10);
+                                                Log.d("GUN", "THRESHOLD IS " + (1000 - progress * 10));
+                                            }
 
-                                                            public void onStartTrackingTouch(SeekBar seekBar) {
-                                                                // ツマミに触れたときに呼ばれる
-                                                            }
+                                            public void onStartTrackingTouch(SeekBar seekBar) {
+                                                // ツマミに触れたときに呼ばれる
+                                            }
 
-                                                            public void onStopTrackingTouch(SeekBar seekBar) {
-                                                                // ツマミを離したときに呼ばれる
-                                                            }
-                                                        }
-                                                )
+                                            public void onStopTrackingTouch(SeekBar seekBar) {
+                                                // ツマミを離したときに呼ばれる
+                                            }
+                                        }
                                 )
-                )
-                .display();
+                );
+
     }
 
     @Override
@@ -167,7 +176,6 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         Log.d("Gun", "Flick detected");
-
         if (!working) {
             working = true;
 
@@ -197,19 +205,24 @@ public class TopActivity extends BaseNormalActivity implements GestureDetector.O
     }
 
     private void reload() {
-        if (!working) {
-            working = true;
+        if (previousWorkTime + 1000 < System.currentTimeMillis()) {
+            previousWorkTime = System.currentTimeMillis();
+            Util.d("TIME: " + previousWorkTime);
+            if (!working) {
+                working = true;
 
-            counter = MAX_COUNT;
-            soundId = reloadSoundId;
+                counter = MAX_COUNT;
+                soundId = reloadSoundId;
 
-            // 音は非同期で再生する
-            new MusicPlayTask().execute(null);
+                // 音は非同期で再生する
+                new MusicPlayTask().execute(null);
 
-            // soundPool.play(soundId, 1, 1, 1, 0, 1);
+                // soundPool.play(soundId, 1, 1, 1, 0, 1);
 
-            working = false;
+                working = false;
+            }
         }
+
     }
 
     @Override

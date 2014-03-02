@@ -157,6 +157,10 @@ public class MLinearLayout extends LinearLayout implements IFWView, IFWLayoutVie
         return this;
     }
 
+    public MLinearLayout heightFillParent() {
+        setViewParam("layout_height", ViewGroup.LayoutParams.FILL_PARENT );
+        return this;
+    }
 
     public MLinearLayout heightPx( int px ) {
         setViewParam("layout_height", px );
@@ -164,6 +168,10 @@ public class MLinearLayout extends LinearLayout implements IFWView, IFWLayoutVie
         return this;
     }
 
+    public MLinearLayout backgroundResorce(int resid){
+        setBackgroundResource(resid);
+        return this;
+    }
 
     public MLinearLayout paddingPx( int px ) {
         setPadding(px, px, px, px);
